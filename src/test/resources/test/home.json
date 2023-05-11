@@ -1,0 +1,32 @@
+[
+    {
+        "place_id": 321476681,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 11775839,
+        "boundingbox": [
+            "40.694965266667",
+            "40.695065266667",
+            "-74.283771866667",
+            "-74.283671866667"
+        ],
+        "lat": "40.695015266666665",
+        "lon": "-74.28372186666667",
+        "display_name": "832, Savitt Place, Union, Union County, New Jersey, 07083, United States",
+        "place_rank": 30,
+        "category": "place",
+        "type": "house",
+        "importance": -0.8399999999999999,
+        "address": {
+            "house_number": "832",
+            "road": "Savitt Place",
+            "town": "Union",
+            "county": "Union County",
+            "state": "New Jersey",
+            "ISO3166-2-lvl4": "US-NJ",
+            "postcode": "07083",
+            "country": "United States",
+            "country_code": "us"
+        }
+    }
+]

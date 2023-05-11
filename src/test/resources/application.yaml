@@ -1,0 +1,57 @@
+server:
+  port: 9980
+camel:
+  springboot:
+    name: Insurance EIP
+    jmx-enabled: false
+    tracing: true
+    backlog-tracing: true
+    debugging: true
+  dataformat:
+    jackson:
+      auto-discover-object-mapper: true
+      pretty-print: true
+  component:
+    log:
+      enabled: true
+    jpa:
+      join-transaction: false
+      shared-entity-manager: false
+      # autowired-enabled: true
+      # enabled: true
+management:
+  port: 9981
+endpoints:
+  enabled: false
+  health:
+    enabled: true
+quickstart:
+  generateOrderPeriod: 10s
+  processOrderPeriod: 30s
+spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+    serialization:
+      fail-on-empty-beans: false
+  freemarker:
+    suffix: .ftlh
+    cache: false
+    template-loader-path:
+      - classpath:/templates/
+  datasource:
+    insurance:
+      url: jdbc:postgresql://localhost:5432/insurance
+      jdbc-url: jdbc:postgresql://localhost:5432/insurance
+      username: insured
+      password: insured
+      driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    generate-ddl: true
+    properties:
+      hibernate:
+        ddl-auto: create
+        dialect: org.hibernate.dialect.PostgreSQLDialect

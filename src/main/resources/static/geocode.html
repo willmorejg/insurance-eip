@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Geocoder</title>
+    <meta name="description" content="HTML5" />
+    <meta name="author" content="Author" />
+    <link href="css/cosmo-bootstrap.css" rel="stylesheet" />
+    <link href="webjars/leaflet/leaflet.css" rel="stylesheet" />
+    <style>
+      #map {
+        margin-left: 150px;
+        width: 380px;
+        height: 380px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Geocoder Page</h1>
+      <h2>Here is where we can demonstrate Camel and Geocoding.</h2>
+      <form id="sample-form" action="/camel/geocode" method="post">
+        <label for="address">Address</label>
+        <input class="form-control" type="text" id="address" name="address" />
+        <input
+          class="btn btn-primary btn-block"
+          type="submit"
+          name="Sumbit"
+          value="Submit"
+        />
+      </form>
+    </div>
+
+    <table>
+      <tr>
+        <td><div id="map"></div></td>
+        <td><div id="markers"></div></td>
+      </tr>
+    </table>
+
+    <script src="webjars/jquery/jquery.min.js"></script>
+    <script src="webjars/bootstrap/js/bootstrap.min.js"></script>
+    <script src="webjars/leaflet/leaflet.js"></script>
+
+    <script>
+      var map = L.map("map").setView(
+        [40.695015266666665, -74.28372186666667],
+        13
+      );
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+
+      function getVisibleMarkers(map) {
+        var markerList = [];
+        map.eachLayer(function (layer) {
+          if (
+            layer instanceof L.Marker &&
+            map.getBounds().contains(layer.getLatLng())
+          ) {
+            console.log('layer', layer);
+            markerList.push(layer.getPopup().getContent());
+          }
+        });
+        return markerList;
+      }
+
+      function getFormData(data) {
+        var unindexed_array = data;
+        var indexed_array = {};
+
+        $.map(unindexed_array, function (n, i) {
+          indexed_array[n["name"]] = n["value"];
+        });
+
+        return indexed_array;
+      }
+
+      $("#sample-form").on("submit", function (e) {
+        e.preventDefault();
+        const form = $(e.target);
+        var data = form.serializeArray();
+        var json = JSON.stringify(getFormData(data));
+        var url = form.attr("action");
+
+        $.ajax({
+          url: url,
+          type: "POST",
+          dataType: "json",
+          contentType: "application/json",
+          data: json,
+          success: function (data) {
+            console.log("data", data[0]);
+            var marker = L.marker([data[0].lat, data[0].lon]).addTo(map);
+            marker.bindPopup("<b>" + data[0].display_name + "</b>");
+            map.panTo([data[0].lat, data[0].lon]);
+            $("#markers").empty().html(getVisibleMarkers(map));
+          },
+          error: function error(response) {
+            try {
+              var json = JSON.parse(response.responseText);
+              if (typeof json.message === "undefined") {
+                throw new Error("Response json has no message");
+              } else {
+                alert(json.message);
+              }
+            } catch (ex) {
+              alert("unexpected error (code:" + response.status + ")");
+            }
+          },
+        });
+      });
+    </script>
+  </body>
+</html>

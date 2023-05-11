@@ -1,0 +1,3 @@
+rootProject.name = 'insurance-eip'
+include ':insured'
+project(':insured').projectDir = new File('../insured')

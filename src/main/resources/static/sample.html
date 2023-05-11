@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sample</title>
+    <meta name="description" content="HTML5" />
+    <meta name="author" content="Author" />
+    <link href="css/cosmo-bootstrap.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container">
+      <form id="sample-form" action="/camel/sample" method="post">
+        <table>
+          <thead>
+            <th>Key</th>
+            <th>Value</th>
+          </thead>
+          <tbody>
+            <tr>
+              <td><label for="key1">Key1</label></td>
+              <td><input class="form-control" type="text" name="key1" /></td>
+            </tr>
+            <tr>
+              <td><label for="key2">Key2</label></td>
+              <td><input class="form-control" type="text" name="key2" /></td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <input
+                  class="btn btn-primary btn-block"
+                  type="submit"
+                  name="Sumbit"
+                  value="Submit"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+
+    <div>
+      <textarea id="result" name="result" rows="20" cols="80"></textarea>
+    </div>
+
+    <script src="webjars/jquery/jquery.min.js"></script>
+    <script src="webjars/bootstrap/js/bootstrap.min.js"></script>
+
+    <script>
+      function getFormData(data) {
+        var unindexed_array = data;
+        var indexed_array = {};
+     
+        $.map(unindexed_array, function(n, i) {
+         indexed_array[n['name']] = n['value'];
+        });
+     
+        return indexed_array;
+     }
+
+      $("#sample-form").on("submit", function (e) {
+        e.preventDefault();
+        const form = $(e.target);
+        var data = form.serializeArray();
+        var json = JSON.stringify(getFormData(data));
+        var url = form.attr("action");
+
+        $.ajax({
+          url: url,
+          type: "POST",
+          dataType: 'text',
+          contentType: 'application/json',
+          data: json,
+          success: function (data) {
+            console.log('data', data);
+            var content = $(data);
+            $("#result").empty().text(data);
+          },
+          error: function error(response) {
+            try {
+              var json = JSON.parse(response.responseText);
+              if (typeof json.message === "undefined") {
+                throw new Error("Response json has no message");
+              } else {
+                alert(json.message);
+              }
+            } catch (ex) {
+              alert("unexpected error (code:" + response.status + ")");
+            }
+          },
+        });
+      });
+    </script>
+  </body>
+</html>

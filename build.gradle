@@ -1,0 +1,173 @@
+plugins {
+	id 'java'
+	id 'war'
+	id 'org.springframework.boot' version '2.7.10'
+	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+	id 'com.diffplug.spotless' version '6.15.0'
+	id 'org.ysb33r.doxygen' version '0.7.0'
+	id 'jacoco'
+	id 'project-report'
+	id 'build-dashboard'
+}
+
+group = 'net.ljcomputing'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenLocal()
+
+	maven {
+		url = uri('http://localhost:8081/repository/maven-central')
+		allowInsecureProtocol = true
+	}
+}
+
+
+dependencies {
+	implementation(platform('org.apache.camel.springboot:camel-spring-boot-dependencies:3.20.3'))
+
+	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	implementation 'org.apache.camel.springboot:camel-spring-boot-starter'
+	implementation 'org.apache.camel.springboot:camel-core-starter'
+	implementation 'org.apache.camel.springboot:camel-http-starter'
+	implementation 'org.apache.camel.springboot:camel-file-starter'
+	implementation 'org.apache.camel.springboot:camel-log-starter'
+	implementation 'org.apache.camel.springboot:camel-servlet-starter'
+	implementation 'org.apache.camel.springboot:camel-platform-http-starter'
+	implementation 'org.apache.camel.springboot:camel-rest-starter'
+	implementation 'org.apache.camel.springboot:camel-jackson-starter'
+	implementation 'org.apache.camel.springboot:camel-freemarker-starter'
+	implementation 'org.apache.camel.springboot:camel-snakeyaml-starter'
+	implementation 'org.apache.camel.springboot:camel-jaxb-starter'
+	implementation 'org.apache.camel.springboot:camel-xj-starter'
+	implementation 'org.apache.camel.springboot:camel-spring-jdbc-starter'
+	implementation 'org.apache.camel.springboot:camel-sql-starter'
+	implementation 'org.apache.camel.springboot:camel-jpa-starter'
+	implementation 'org.apache.camel.springboot:camel-stream-starter'
+	implementation 'org.apache.camel.springboot:camel-jsonpath-starter'
+	implementation 'org.apache.camel.springboot:camel-geocoder-starter'
+	implementation 'org.apache.camel.springboot:camel-barcode-starter'
+
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.0'
+
+	implementation 'solutions.elevation.camel:camel-openhtmltopdf:1.0.2'
+	implementation 'org.postgresql:postgresql:42.6.0'
+	implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
+	implementation 'com.github.jtidy:jtidy:1.0.3'
+
+	implementation 'org.webjars:webjars-locator:0.46'
+	implementation 'org.webjars:bootstrap:5.2.3'
+	implementation 'org.webjars:jquery:3.6.4'
+	implementation 'org.webjars:leaflet:1.8.0'
+
+	implementation project(":insured")
+
+	compileOnly 'org.projectlombok:lombok'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.apache.camel:camel-test-spring-junit5'
+}
+
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+
+tasks.withType(JavaCompile) {
+	dependsOn spotlessApply
+	options.encoding = 'UTF-8'
+}
+
+bootRun {
+	// Use Spring Boot DevTool only when we run Gradle bootRun task
+	classpath = sourceSets.main.runtimeClasspath //+ configurations.dev
+}
+
+jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+
+	manifest {
+		attributes (
+				'Main-Class': 'net.ljcomputing.camelinsurancespike.CamelInsuranceSpikeApplication',
+				'Implementation-Title': 'Camel Insurance Spike',
+				'Implementation-Version': version
+				)
+	}
+}
+
+spotless {
+	java {
+		targetExclude("build/**")
+		licenseHeaderFile("$rootProject.projectDir/configuration/spotless/license-header.java").updateYearWithLatest(true)
+		toggleOffOn()
+		trimTrailingWhitespace()
+		endWithNewline()
+		removeUnusedImports()
+		importOrder('java', 'javax', '', '\\#')
+		googleJavaFormat('1.15.0').aosp().reflowLongStrings().groupArtifact('com.google.googlejavaformat:google-java-format')
+	}
+	groovyGradle {
+		target '*.gradle'
+		greclipse()
+	}
+}
+
+javadoc {
+	exclude("build/generated/sources/**/*.java")
+	options.memberLevel = JavadocMemberLevel.PRIVATE
+	failOnError(false)
+}
+
+doxygen {
+	source 'src/main/java'
+	project_name 'Camel Insurance Spike'
+	generate_latex true
+	generate_html true
+	optimize_output_java true
+}
+
+test {
+	testLogging.showStandardStreams = true
+	finalizedBy jacocoTestReport
+	useJUnitPlatform()
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 1.0
+			}
+		}
+	}
+}
+
+task restart {
+	dependsOn classes
+}

@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><object xmlns:xj="http://camel.apache.org/component/xj" xj:type="object"><object xj:name="key1" xj:type="string">KEY_ONE</object><object xj:name="key2" xj:type="string">KEY_TWO</object></object>
