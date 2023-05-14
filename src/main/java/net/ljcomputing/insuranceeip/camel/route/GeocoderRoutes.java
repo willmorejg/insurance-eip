@@ -53,11 +53,19 @@ public class GeocoderRoutes extends RouteBuilder {
                             public void process(Exchange exchange) throws Exception {
                                 String in = exchange.getIn().getBody().toString();
                                 DocumentContext document = JsonPath.parse(in);
-                                String address = document.read("$.[0].display_name");
-                                log.debug("address", address);
+                                String address =
+                                        ((String) document.read("$.[0].display_name"))
+                                                .replace(",", "");
+                                log.debug("address: {}", address);
+                                String geoString =
+                                        String.format(
+                                                "geo:%s,%s",
+                                                document.read("$.[0].lat").toString(),
+                                                document.read("$.[0].lon").toString());
+                                log.debug("geoString: {}", geoString);
                                 ProducerTemplate producerTemplate =
                                         camelContext.createProducerTemplate();
-                                producerTemplate.sendBody("direct:uspsbarcode", address);
+                                producerTemplate.sendBody("direct:uspsbarcode", geoString);
                             }
                         })
                 .end();
